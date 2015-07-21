@@ -1,0 +1,13 @@
+changes:
+
+Add sqlite-jdbc-3.8.10.1.jar to classpath
+Add scuba.db to project base directory
+
+MyJDBC.java
+	-line 48: change ResultSet.TYPE_SCROLL_INSENSITIVE to ResultSet.TYPE_FORWARD_ONLY
+	
+ScubaNLGMain.java	
+	change DB instantiaion in constructor to:
+		dataBase = new MyJDBC("jdbc:sqlite:scuba.db", "org.sqlite.JDBC", "", "");
+		
+	
