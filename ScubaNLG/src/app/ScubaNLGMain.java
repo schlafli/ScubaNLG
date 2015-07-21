@@ -58,6 +58,7 @@ public class ScubaNLGMain extends javax.swing.JFrame {
 					.getValueAt(i, 10))));
 			diveLabels.add(String.valueOf(((Double) dataBase.getValueAt(i, 0))
 					.intValue()));
+			
 		}
 		
 		gPanel = new AlladinLogMapView(0, 0, 360, 180, 20, 10, x, y,
@@ -121,6 +122,22 @@ public class ScubaNLGMain extends javax.swing.JFrame {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		PREFERRED_WIDTH = (new Double(0.75 * screenSize.width)).intValue();
 		PREFERRED_HEIGHT = (new Double(0.85 * screenSize.height)).intValue();
+		/*
+		 * dialog.addKeyListener(new KeyListener() {
+		 * 
+		 * @Override public void keyTyped(KeyEvent e) { if( e.getKeyCode() ==
+		 * KeyEvent.VK_ESCAPE){ dialog. } }
+		 * 
+		 * @Override public void keyReleased(KeyEvent e) { // TODO
+		 * Auto-generated method stub
+		 * 
+		 * }
+		 * 
+		 * @Override public void keyPressed(KeyEvent e) { // TODO Auto-generated
+		 * method stub
+		 * 
+		 * } });
+		 */
 		dialog.setPreferredSize(new Dimension(PREFERRED_WIDTH, PREFERRED_HEIGHT));
 		dialog.pack();
 		dialog.setVisible(true);

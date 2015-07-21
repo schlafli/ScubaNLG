@@ -9,6 +9,7 @@ package nlg;
  *
  */
 public enum AscentType{
+	
 	FINE(0,6,"fine"),
 	ACCEPTABLE(6,9,"acceptable"),
 	RISKY(9,12,"rapid"),
