@@ -34,10 +34,13 @@ public class NLGDiveReporter extends DiveReporter {
 			
 			sps.setFeature(Feature.TENSE, Tense.PAST);
 			
-			sps.setObject("very shallow");
+			sps.setObject("shallow");
 			
-			generated += realiser.realise(sps);
+			generated += realiser.realiseSentence(sps);
 		}
+		
+		SergeNLG additionalStep = new SergeNLG(diveFeatures);
+		generated += additionalStep.generateText();
 		
 		return initial + generated;
 		
