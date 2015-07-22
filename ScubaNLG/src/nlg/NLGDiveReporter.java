@@ -8,6 +8,7 @@ import messages.DiveEvaluationValue;
 import messages.Message;
 import simplenlg.realiser.english.Realiser;
 import analytics.DiveFeatures;
+import analytics.DiveletFeatures;
 
 public class NLGDiveReporter extends DiveReporter {
 	
@@ -50,16 +51,44 @@ public class NLGDiveReporter extends DiveReporter {
 				.map(realiser::realiseSentence).collect(Collectors.joining());
 	}
 	
+	public List<Message> evaluateDivelet(DiveletFeatures divelet) {
+		return null;
+	}
+	
 	public DiveEvaluation createDiveEvaluation() {
 		DiveEvaluation eval = new DiveEvaluation();
-		if (!diveFeatures.isRealDive()) {
+		if (diveFeatures.getDiveDepth() < 12) {
 			eval.setEvaluation(DiveEvaluationValue.SHALLOW);
 		} else if (diveFeatures.getNumOfDivelets() == 1) {
-			
-			eval.setEvaluation(DiveEvaluationValue.FINE);
+			if (diveFeatures.getDiveDepth() < 15) {
+				eval.setEvaluation(DiveEvaluationValue.VERY_SHALLOW);
+			} else if (diveFeatures.getDiveDepth() < 38
+					&& diveFeatures.getFirstDiveletFeatures()
+							.getExcessBottomTime() < 0) {
+				if (diveFeatures.getFirstDiveletFeatures().getAscentSpeed() < 3) {
+					eval.setEvaluation(DiveEvaluationValue.WELL_EXECUTED);
+				} else if (diveFeatures.getFirstDiveletFeatures()
+						.getAscentSpeed() <= 6) {
+					eval.setEvaluation(DiveEvaluationValue.FINE);
+				} else {
+					eval.setEvaluation(DiveEvaluationValue.RISKY);
+				}
+				
+			} else if (diveFeatures.getDiveDepth() < 50) {
+				if (diveFeatures.getFirstDiveletFeatures()
+						.getExcessBottomTime() > diveFeatures
+						.getFirstDiveletFeatures().getBottomTime() / 2.5) {
+					eval.setEvaluation(DiveEvaluationValue.VERY_RISKY);
+				} else {
+					eval.setEvaluation(DiveEvaluationValue.RISKY);
+				}
+			} else {
+				eval.setEvaluation(DiveEvaluationValue.VERY_RISKY);
+			}
 		} else {
-			eval = null; // set to null and don't add
+			eval = null;
 		}
+		
 		return eval;
 	}
 }

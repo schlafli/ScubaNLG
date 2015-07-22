@@ -36,7 +36,7 @@ public class DivePhraseFactory {
 					break;
 				case VERY_RISKY:
 					description.setAdjective("risky");
-					description.setPreModifier("very");
+					description.setPreModifier("really");
 					break;
 				case WELL_EXECUTED:
 					description.setAdjective("executed");
