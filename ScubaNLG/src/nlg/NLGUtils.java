@@ -1,7 +1,10 @@
 package nlg;
 
+import java.util.Random;
+
 import simplenlg.framework.NLGFactory;
 import simplenlg.lexicon.Lexicon;
+import simplenlg.phrasespec.NPPhraseSpec;
 import simplenlg.realiser.english.Realiser;
 
 public class NLGUtils {
@@ -9,6 +12,7 @@ public class NLGUtils {
 	private static NLGFactory	_nlgFactoryInstance;
 	private static Lexicon		_nlgLexiconInstance;
 	private static Realiser		_nlgRealiserInstance;
+	private static Random		_randomInstance;
 	
 	public static NLGFactory getFactory() {
 		if (_nlgFactoryInstance == null) {
@@ -42,4 +46,18 @@ public class NLGUtils {
 		return factory;
 	}
 	
+	public static NPPhraseSpec getNounPhrase(Object noun) {
+		return getFactory().createNounPhrase(noun);
+	}
+	
+	public static NPPhraseSpec getNounPhrase(Object determiner, Object noun) {
+		return getFactory().createNounPhrase(determiner, noun);
+	}
+	
+	public static Random getRandom() {
+		if (_randomInstance == null) {
+			_randomInstance = new Random();
+		}
+		return _randomInstance;
+	}
 }

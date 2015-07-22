@@ -1,10 +1,11 @@
 package nlg;
 
-import simplenlg.features.Feature;
-import simplenlg.features.Tense;
-import simplenlg.framework.NLGFactory;
-import simplenlg.phrasespec.NPPhraseSpec;
-import simplenlg.phrasespec.SPhraseSpec;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import messages.DiveEvaluation;
+import messages.DiveEvaluationValue;
+import messages.Message;
 import simplenlg.realiser.english.Realiser;
 import analytics.DiveFeatures;
 
@@ -16,33 +17,49 @@ public class NLGDiveReporter extends DiveReporter {
 	
 	@Override
 	public String generateText() {
+		
+		MessageStore mStore = new MessageStore();
+		
+		// Do all the message creation:
+		mStore.add(createDiveEvaluation());
+		
+		// do the document planning
+		Docplanner docplanner = new Docplanner();
+		List<Message> docplan = docplanner.run(mStore);
+		
+		// run the microplanner to generate text
+		String generatedText = runMicroplanner(docplan);
+		
+		// add additional text
 		String initial = super.generateText();
-		
 		String generated = "<br><h4>Generated Text:</h4>";
-		NLGFactory factory = NLGUtils.getFactory();
-		Realiser realiser = NLGUtils.getRealiser();
 		
-		if (!diveFeatures.isRealDive()) {
-			NPPhraseSpec theDive = NLGUtils.getFactory().createNounPhrase(
-					"dive");
-			theDive.setDeterminer("the");
-			
-			SPhraseSpec sps = NLGUtils.getFactory().createClause();
-			
-			sps.setSubject(theDive);
-			sps.setVerb("be");
-			
-			sps.setFeature(Feature.TENSE, Tense.PAST);
-			
-			sps.setObject("shallow");
-			
-			generated += realiser.realiseSentence(sps);
-		}
+		generated += generatedText;
 		
-		SergeNLG additionalStep = new SergeNLG(diveFeatures);
-		generated += additionalStep.generateText();
+		generated += new SergeNLG(diveFeatures).generateText();
 		
 		return initial + generated;
 		
+	}
+	
+	public String runMicroplanner(List<Message> docplan) {
+		Realiser realiser = NLGUtils.getRealiser();
+		Microplanner microplanner = new Microplanner();
+		
+		return microplanner.run(docplan).stream()
+				.map(realiser::realiseSentence).collect(Collectors.joining());
+	}
+	
+	public DiveEvaluation createDiveEvaluation() {
+		DiveEvaluation eval = new DiveEvaluation();
+		if (!diveFeatures.isRealDive()) {
+			eval.setEvaluation(DiveEvaluationValue.SHALLOW);
+		} else if (diveFeatures.getNumOfDivelets() == 1) {
+			
+			eval.setEvaluation(DiveEvaluationValue.FINE);
+		} else {
+			eval = null; // set to null and don't add
+		}
+		return eval;
 	}
 }
