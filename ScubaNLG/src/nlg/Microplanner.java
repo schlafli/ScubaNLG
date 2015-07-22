@@ -17,6 +17,7 @@ public class Microplanner {
 	public Microplanner() {
 		lexRules = new ArrayList<>();
 		lexRules.add(DivePhraseFactory::getDiveDescription);
+		lexRules.add(DivePhraseFactory::getDiveletDepthWarning);
 		
 	}
 	

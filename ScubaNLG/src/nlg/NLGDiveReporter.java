@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import messages.DiveEvaluation;
 import messages.DiveEvaluationValue;
+import messages.DiveletDepthWarningMessage;
 import messages.Message;
 import simplenlg.realiser.english.Realiser;
 import analytics.DiveFeatures;
@@ -12,17 +13,21 @@ import analytics.DiveletFeatures;
 
 public class NLGDiveReporter extends DiveReporter {
 	
+	private MessageStore	mStore;
+	
 	public NLGDiveReporter(DiveFeatures diveFeatures) {
 		super(diveFeatures);
+		mStore = new MessageStore();
+		
 	}
 	
 	@Override
 	public String generateText() {
 		
-		MessageStore mStore = new MessageStore();
-		
 		// Do all the message creation:
-		mStore.add(createDiveEvaluation());
+		createDiveEvaluation();
+		
+		evaluateDivelets();
 		
 		// do the document planning
 		Docplanner docplanner = new Docplanner();
@@ -51,11 +56,43 @@ public class NLGDiveReporter extends DiveReporter {
 				.map(realiser::realiseSentence).collect(Collectors.joining());
 	}
 	
-	public List<Message> evaluateDivelet(DiveletFeatures divelet) {
-		return null;
+	private void evaluateDivelets() {
+		if (diveFeatures.getNumOfDivelets() > 0) {
+			evaluateDivelet(diveFeatures.getFirstDiveletFeatures(), 1,
+					diveFeatures.getNumOfDivelets());
+			
+			if (diveFeatures.getNumOfDivelets() > 1) {
+				evaluateDivelet(diveFeatures.getSecondDiveletFeatures(), 2,
+						diveFeatures.getNumOfDivelets());
+			}
+		}
 	}
 	
-	public DiveEvaluation createDiveEvaluation() {
+	public void evaluateDivelet(DiveletFeatures divelet, int diveletNumber,
+			int totalDivelets) {
+		evaluateDiveletDepth(divelet, diveletNumber, totalDivelets);
+		
+	}
+	
+	public void evaluateDiveletDepth(DiveletFeatures divelet,
+			int diveletNumber, int totalDivelets) {
+		
+		DiveletDepthWarningMessage msg = new DiveletDepthWarningMessage();
+		msg.setDiveletNumber(diveletNumber);
+		msg.setTotalDivelets(totalDivelets);
+		
+		if (divelet.getDiveDepth() > 40 && divelet.getDiveDepth() < 42) {
+			msg.setCloseToLimit(true);
+			mStore.add(msg);
+		} else if (divelet.getDiveDepth() > 42) {
+			msg.setCloseToLimit(false);
+			msg.setExcessDiveDepth(divelet.getExcessDiveDepth());
+			mStore.add(msg);
+		}
+		
+	}
+	
+	public void createDiveEvaluation() {
 		DiveEvaluation eval = new DiveEvaluation();
 		if (diveFeatures.getDiveDepth() < 12) {
 			eval.setEvaluation(DiveEvaluationValue.SHALLOW);
@@ -89,6 +126,6 @@ public class NLGDiveReporter extends DiveReporter {
 			eval = null;
 		}
 		
-		return eval;
+		mStore.add(eval);
 	}
 }

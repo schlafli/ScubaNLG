@@ -20,7 +20,14 @@ public class Message {
 			return methods.stream().map(method -> method.getName())
 					.filter(s -> s.startsWith("get"))
 					.map(s -> s.substring(3, s.length()))
-					.anyMatch(s -> s.equalsIgnoreCase(property));
+					.anyMatch(s -> s.equalsIgnoreCase(property))
+					
+					||
+					
+					methods.stream().map(method -> method.getName())
+							.filter(s -> s.startsWith("is"))
+							.map(s -> s.substring(2, s.length()))
+							.anyMatch(s -> s.equalsIgnoreCase(property));
 		} catch (Exception e) {
 			return false;
 		}
