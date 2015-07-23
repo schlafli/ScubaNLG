@@ -58,7 +58,6 @@ public class ScubaNLGMain extends javax.swing.JFrame {
 					.getValueAt(i, 10))));
 			diveLabels.add(String.valueOf(((Double) dataBase.getValueAt(i, 0))
 					.intValue()));
-			
 		}
 		
 		gPanel = new AlladinLogMapView(0, 0, 360, 180, 20, 10, x, y,

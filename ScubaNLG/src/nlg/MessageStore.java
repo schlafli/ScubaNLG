@@ -2,8 +2,10 @@ package nlg;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import messages.Message;
 
@@ -28,6 +30,11 @@ public class MessageStore extends HashSet<Message> {
 		} else {
 			return null;
 		}
+	}
+	
+	public <T extends Message> List<T> queryAll(Class<T> cls, Predicate<T> test) {
+		return this.stream().filter(cls::isInstance).map(cls::cast)
+				.filter(test).collect(Collectors.toList());
 	}
 	
 	public <T extends Message> T query(Class<T> cls, Predicate<T> test) {

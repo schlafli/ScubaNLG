@@ -26,7 +26,7 @@ public class Microplanner {
 		lexRules.add(DivePhraseFactory::getExcessDepthTimeWarning);
 		lexRules.add(DivePhraseFactory::getSafeDepthElement);
 		lexRules.add(DivePhraseFactory::getSafeBottomTimeElement);
-		
+		lexRules.add(DivePhraseFactory::generateMultiplDiveletWarning);
 	}
 	
 	public List<NLGElement> run(List<Message> docplan) {
@@ -42,11 +42,15 @@ public class Microplanner {
 		
 		// Add aggregation rules to the Aggregator
 		ClauseCoordinationRule coord = new ClauseCoordinationRule();
+		ObjectCoordinationRule ocoord = new ObjectCoordinationRule();
+		
 		ForwardConjunctionReductionRule fcr = new ForwardConjunctionReductionRule();
 		BackwardConjunctionReductionRule bcr = new BackwardConjunctionReductionRule();
 		
 		aggregator.addRule(fcr);
 		aggregator.addRule(bcr);
+		
+		aggregator.addRule(ocoord);
 		aggregator.addRule(coord);
 		
 		List<NLGElement> aggregated;

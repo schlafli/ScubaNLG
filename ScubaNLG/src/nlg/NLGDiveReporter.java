@@ -8,6 +8,7 @@ import messages.DiveEvaluationValue;
 import messages.DiveletDepthWarningMessage;
 import messages.DiveletExcessDepthTimeMessage;
 import messages.Message;
+import messages.MultipleDiveWarningMessage;
 import messages.SafeBottomTimeMessage;
 import messages.SafeDiveDepthMessage;
 import messages.SecondDiveletDeeperMessage;
@@ -176,6 +177,9 @@ public class NLGDiveReporter extends DiveReporter {
 			}
 		} else {
 			eval = null;
+			MultipleDiveWarningMessage msg = new MultipleDiveWarningMessage();
+			mStore.add(msg);
+			
 		}
 		
 		mStore.add(eval);
