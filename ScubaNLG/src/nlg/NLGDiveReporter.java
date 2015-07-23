@@ -6,7 +6,11 @@ import java.util.stream.Collectors;
 import messages.DiveEvaluation;
 import messages.DiveEvaluationValue;
 import messages.DiveletDepthWarningMessage;
+import messages.DiveletExcessDepthTimeMessage;
 import messages.Message;
+import messages.SafeBottomTimeMessage;
+import messages.SafeDiveDepthMessage;
+import messages.SecondDiveletDeeperMessage;
 import simplenlg.realiser.english.Realiser;
 import analytics.DiveFeatures;
 import analytics.DiveletFeatures;
@@ -64,32 +68,80 @@ public class NLGDiveReporter extends DiveReporter {
 			if (diveFeatures.getNumOfDivelets() > 1) {
 				evaluateDivelet(diveFeatures.getSecondDiveletFeatures(), 2,
 						diveFeatures.getNumOfDivelets());
+				
+				createSequentialDiveletDeeperWarning(
+						diveFeatures.getFirstDiveletFeatures(),
+						diveFeatures.getSecondDiveletFeatures());
 			}
+		}
+	}
+	
+	private void createSequentialDiveletDeeperWarning(DiveletFeatures first,
+			DiveletFeatures second) {
+		if (first.getDiveDepth() < second.getDiveDepth()) {
+			SecondDiveletDeeperMessage msg = new SecondDiveletDeeperMessage();
+			
+			msg.setExcessDepth((int) ((second.getDiveDepth() - first
+					.getDiveDepth()) + 0.5));
+			
+			mStore.add(msg);
 		}
 	}
 	
 	public void evaluateDivelet(DiveletFeatures divelet, int diveletNumber,
 			int totalDivelets) {
 		evaluateDiveletDepth(divelet, diveletNumber, totalDivelets);
-		
+		evaluateDiveletDuration(divelet, diveletNumber, totalDivelets);
+		evaluateDiveletBottomTime(divelet, diveletNumber, totalDivelets);
+	}
+	
+	private void evaluateDiveletDuration(DiveletFeatures divelet,
+			int diveletNumber, int totalDivelets) {
+		if (divelet.getExcessBottomTime() > 0) {
+			DiveletExcessDepthTimeMessage msg = new DiveletExcessDepthTimeMessage();
+			msg.setDiveletNumber(diveletNumber);
+			msg.setTotalDivelets(totalDivelets);
+			msg.setDiveDepth((int) (divelet.getDiveDepth() + 0.5));
+			msg.setExcessTime((int) divelet.getExcessBottomTime());
+			
+			mStore.add(msg);
+		}
 	}
 	
 	public void evaluateDiveletDepth(DiveletFeatures divelet,
 			int diveletNumber, int totalDivelets) {
 		
-		DiveletDepthWarningMessage msg = new DiveletDepthWarningMessage();
-		msg.setDiveletNumber(diveletNumber);
-		msg.setTotalDivelets(totalDivelets);
-		
-		if (divelet.getDiveDepth() > 40 && divelet.getDiveDepth() < 42) {
-			msg.setCloseToLimit(true);
-			mStore.add(msg);
-		} else if (divelet.getDiveDepth() > 42) {
-			msg.setCloseToLimit(false);
-			msg.setExcessDiveDepth(divelet.getExcessDiveDepth());
+		if (divelet.getDiveDepth() > 40) {
+			DiveletDepthWarningMessage msg = new DiveletDepthWarningMessage();
+			msg.setDiveletNumber(diveletNumber);
+			msg.setTotalDivelets(totalDivelets);
+			
+			if (divelet.getDiveDepth() < 42) {
+				msg.setCloseToLimit(true);
+				mStore.add(msg);
+			} else {
+				msg.setCloseToLimit(false);
+				msg.setExcessDiveDepth(divelet.getExcessDiveDepth());
+				mStore.add(msg);
+			}
+		} else {
+			SafeDiveDepthMessage msg = new SafeDiveDepthMessage();
+			msg.setDiveletNumber(diveletNumber);
+			msg.setTotalDivelets(totalDivelets);
+			msg.setDiveDepth((int) (divelet.getDiveDepth() + 0.5));
+			
 			mStore.add(msg);
 		}
-		
+	}
+	
+	public void evaluateDiveletBottomTime(DiveletFeatures divelet,
+			int diveletNumber, int totalDivelets) {
+		if (divelet.getExcessBottomTime() < 0) {
+			SafeBottomTimeMessage msg = new SafeBottomTimeMessage();
+			msg.setDiveletNumber(diveletNumber);
+			msg.setTotalDivelets(totalDivelets);
+			mStore.add(msg);
+		}
 	}
 	
 	public void createDiveEvaluation() {
@@ -98,7 +150,7 @@ public class NLGDiveReporter extends DiveReporter {
 			eval.setEvaluation(DiveEvaluationValue.SHALLOW);
 		} else if (diveFeatures.getNumOfDivelets() == 1) {
 			if (diveFeatures.getDiveDepth() < 15) {
-				eval.setEvaluation(DiveEvaluationValue.VERY_SHALLOW);
+				eval.setEvaluation(DiveEvaluationValue.REALLY_SHALLOW);
 			} else if (diveFeatures.getDiveDepth() < 38
 					&& diveFeatures.getFirstDiveletFeatures()
 							.getExcessBottomTime() < 0) {
@@ -114,13 +166,13 @@ public class NLGDiveReporter extends DiveReporter {
 			} else if (diveFeatures.getDiveDepth() < 50) {
 				if (diveFeatures.getFirstDiveletFeatures()
 						.getExcessBottomTime() > diveFeatures
-						.getFirstDiveletFeatures().getBottomTime() / 2.5) {
-					eval.setEvaluation(DiveEvaluationValue.VERY_RISKY);
+						.getFirstDiveletFeatures().getBottomTime() / 1.8) {
+					eval.setEvaluation(DiveEvaluationValue.REALLY_RISKY);
 				} else {
 					eval.setEvaluation(DiveEvaluationValue.RISKY);
 				}
 			} else {
-				eval.setEvaluation(DiveEvaluationValue.VERY_RISKY);
+				eval.setEvaluation(DiveEvaluationValue.REALLY_RISKY);
 			}
 		} else {
 			eval = null;

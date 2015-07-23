@@ -1,9 +1,17 @@
 package nlg;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import messages.DiveEvaluation;
 import messages.DiveletDepthWarningMessage;
+import messages.DiveletExcessDepthTimeMessage;
 import messages.DiveletMessage;
 import messages.Message;
+import messages.SafeBottomTimeMessage;
+import messages.SafeDiveDepthMessage;
+import messages.SecondDiveletDeeperMessage;
+import simplenlg.framework.DocumentElement;
 import simplenlg.framework.NLGElement;
 import simplenlg.phrasespec.AdjPhraseSpec;
 import simplenlg.phrasespec.NPPhraseSpec;
@@ -11,6 +19,102 @@ import simplenlg.phrasespec.PPPhraseSpec;
 import simplenlg.phrasespec.SPhraseSpec;
 
 public class DivePhraseFactory {
+	
+	public static NLGElement getSafeDepthElement(Message message) {
+		
+		SafeDiveDepthMessage msg;
+		if ((msg = getTypedMessage(message, SafeDiveDepthMessage.class)) != null) {
+			
+			SPhraseSpec spec = NLGUtils.getFactory().createClause("your depth",
+					"be");
+			
+			PPPhraseSpec diveletNP = getDiveletNP(msg);
+			
+			if (diveletNP != null) {
+				spec.addFrontModifier(diveletNP);
+			}
+			
+			NPPhraseSpec noun = NLGUtils
+					.getNounPhrase("within the safety limits recommended by PADI");
+			spec.addComplement(noun);
+			
+			return spec;
+		}
+		
+		return null;
+	}
+	
+	public static NLGElement getSafeBottomTimeElement(Message message) {
+		
+		SafeBottomTimeMessage msg;
+		if ((msg = getTypedMessage(message, SafeBottomTimeMessage.class)) != null) {
+			
+			SPhraseSpec spec = NLGUtils.getFactory().createClause(
+					"your bottom time", "be");
+			
+			PPPhraseSpec diveletNP = getDiveletNP(msg);
+			
+			if (diveletNP != null) {
+				spec.addFrontModifier(diveletNP);
+			}
+			
+			NPPhraseSpec noun = NLGUtils
+					.getNounPhrase("within the safety limits recommended by PADI");
+			spec.addComplement(noun);
+			
+			return spec;
+		}
+		
+		return null;
+	}
+	
+	public static NLGElement getExcessDepthTimeWarning(Message message) {
+		
+		DiveletExcessDepthTimeMessage msg;
+		if ((msg = getTypedMessage(message, DiveletExcessDepthTimeMessage.class)) != null) {
+			
+			SPhraseSpec spec = NLGUtils.getFactory()
+					.createClause("you", "stay");
+			
+			PPPhraseSpec diveletNP = getDiveletNP(msg);
+			if (diveletNP != null) {
+				spec.addFrontModifier(diveletNP);
+			}
+			
+			NPPhraseSpec noun = NLGUtils
+					.getNounPhrase("longer than the NDL by "
+							+ msg.getExcessTime() + "mins");
+			spec.addComplement(noun);
+			return spec;
+		}
+		
+		return null;
+	}
+	
+	public static NLGElement getExcessSecondDiveDepth(Message message) {
+		SecondDiveletDeeperMessage msg;
+		if ((msg = getTypedMessage(message, SecondDiveletDeeperMessage.class)) != null) {
+			
+			DocumentElement firstSentence = NLGUtils.getFactory()
+					.createSentence(
+							"on your second dive you went deeper than the first (by "
+									+ msg.getExcessDepth()
+									+ "m) which is generally not recommended");
+			
+			DocumentElement secondSentence = NLGUtils
+					.getFactory()
+					.createSentence(
+							"your first dive of the day should always be the deepest followed by shallower repeat dives");
+			
+			List<DocumentElement> sentences = new ArrayList<DocumentElement>();
+			sentences.add(firstSentence);
+			sentences.add(secondSentence);
+			
+			return NLGUtils.getFactory().createParagraph(sentences);
+			
+		}
+		return null;
+	}
 	
 	public static NLGElement getDiveletDepthWarning(Message message) {
 		
@@ -60,11 +164,12 @@ public class DivePhraseFactory {
 				case RISKY:
 					description.setAdjective("risky");
 					break;
+				case REALLY_SHALLOW:
+					description.setPreModifier("really");
 				case SHALLOW:
 					description.setAdjective("shallow");
-					description.setPreModifier("very");
 					break;
-				case VERY_RISKY:
+				case REALLY_RISKY:
 					description.setAdjective("risky");
 					description.setPreModifier("really");
 					break;
@@ -100,13 +205,13 @@ public class DivePhraseFactory {
 			
 			NPPhraseSpec spec = NLGUtils.getFactory().createNounPhrase("dive");
 			
-			spec.addPreModifier("your");
-			
 			if (divelet.getDiveletNumber() == 1) {
-				spec.setDeterminer("first");
+				spec.addPreModifier("first");
 			} else {
-				spec.setDeterminer("second");
+				spec.addPreModifier("second");
 			}
+			
+			spec.setDeterminer("your");
 			
 			PPPhraseSpec ppSpec = NLGUtils.getFactory()
 					.createPrepositionPhrase("on", spec);

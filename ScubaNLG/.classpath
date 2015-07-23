@@ -5,5 +5,6 @@
 	<classpathentry kind="lib" path="mysql-connector-java-5.1.36-bin.jar"/>
 	<classpathentry kind="lib" path="simplenlg-v4.4.2.jar"/>
 	<classpathentry kind="lib" path="sqlite-jdbc-3.8.10.1.jar"/>
+	<classpathentry kind="lib" path="jssc-2.8.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
