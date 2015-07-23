@@ -5,17 +5,37 @@ import java.util.Collection;
 
 import messages.Message;
 
-public class DocPlan extends ArrayList<Message> {
+public class DocPlan {
 	
-	@Override
+	ArrayList<ArrayList<Message>>	plan;
+	
+	ArrayList<Message>				currentSection;
+	
+	public void newSection() {
+		if (currentSection.size() > 0) {
+			plan.add(currentSection);
+		}
+		
+		currentSection = new ArrayList<Message>();
+	}
+	
+	public DocPlan() {
+		currentSection = new ArrayList<Message>();
+		plan = new ArrayList<ArrayList<Message>>();
+	}
+	
+	public ArrayList<ArrayList<Message>> getPlan() {
+		newSection();
+		return plan;
+	}
+	
 	public boolean add(Message e) {
 		if (e == null)
 			return false;
 		else
-			return super.add(e);
+			return currentSection.add(e);
 	}
 	
-	@Override
 	public boolean addAll(Collection<? extends Message> c) {
 		if (c == null) {
 			return false;

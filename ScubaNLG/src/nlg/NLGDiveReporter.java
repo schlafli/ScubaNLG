@@ -7,11 +7,11 @@ import messages.DiveEvaluation;
 import messages.DiveEvaluationValue;
 import messages.DiveletDepthWarningMessage;
 import messages.DiveletExcessDepthTimeMessage;
-import messages.Message;
 import messages.MultipleDiveWarningMessage;
 import messages.SafeBottomTimeMessage;
 import messages.SafeDiveDepthMessage;
 import messages.SecondDiveletDeeperMessage;
+import simplenlg.framework.NLGElement;
 import simplenlg.realiser.english.Realiser;
 import analytics.DiveFeatures;
 import analytics.DiveletFeatures;
@@ -36,7 +36,7 @@ public class NLGDiveReporter extends DiveReporter {
 		
 		// do the document planning
 		Docplanner docplanner = new Docplanner();
-		List<Message> docplan = docplanner.run(mStore);
+		DocPlan docplan = docplanner.run(mStore);
 		
 		// run the microplanner to generate text
 		String generatedText = runMicroplanner(docplan);
@@ -53,12 +53,18 @@ public class NLGDiveReporter extends DiveReporter {
 		
 	}
 	
-	public String runMicroplanner(List<Message> docplan) {
+	public String runMicroplanner(DocPlan docplan) {
 		Realiser realiser = NLGUtils.getRealiser();
 		Microplanner microplanner = new Microplanner();
+		List<List<NLGElement>> res = microplanner.run(docplan);
+		String output = "";
+		for (List<NLGElement> list : res) {
+			output += list.stream().map(realiser::realiseSentence)
+					.collect(Collectors.joining())
+					+ "\n";
+		}
 		
-		return microplanner.run(docplan).stream()
-				.map(realiser::realiseSentence).collect(Collectors.joining());
+		return output;
 	}
 	
 	private void evaluateDivelets() {

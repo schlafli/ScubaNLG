@@ -7,9 +7,7 @@ import java.util.stream.Collectors;
 
 import messages.Message;
 import simplenlg.aggregation.Aggregator;
-import simplenlg.aggregation.BackwardConjunctionReductionRule;
 import simplenlg.aggregation.ClauseCoordinationRule;
-import simplenlg.aggregation.ForwardConjunctionReductionRule;
 import simplenlg.features.Feature;
 import simplenlg.features.Tense;
 import simplenlg.framework.NLGElement;
@@ -29,6 +27,16 @@ public class Microplanner {
 		lexRules.add(DivePhraseFactory::generateMultiplDiveletWarning);
 	}
 	
+	public List<List<NLGElement>> run(DocPlan docplan) {
+		
+		List<List<NLGElement>> result = new ArrayList<List<NLGElement>>();
+		for (ArrayList<Message> subPlan : docplan.getPlan()) {
+			result.add(run(subPlan));
+		}
+		
+		return result;
+	}
+	
 	public List<NLGElement> run(List<Message> docplan) {
 		List<NLGElement> planned = docplan.stream().map(this::singleMessageRun)
 				.map(element -> {
@@ -44,21 +52,24 @@ public class Microplanner {
 		ClauseCoordinationRule coord = new ClauseCoordinationRule();
 		ObjectCoordinationRule ocoord = new ObjectCoordinationRule();
 		
-		ForwardConjunctionReductionRule fcr = new ForwardConjunctionReductionRule();
-		BackwardConjunctionReductionRule bcr = new BackwardConjunctionReductionRule();
+		// ForwardConjunctionReductionRule fcr = new
+		// ForwardConjunctionReductionRule();
+		// BackwardConjunctionReductionRule bcr = new
+		// BackwardConjunctionReductionRule();
 		
-		aggregator.addRule(fcr);
-		aggregator.addRule(bcr);
+		// aggregator.addRule(fcr);
+		// aggregator.addRule(bcr);
 		
-		aggregator.addRule(ocoord);
+		// aggregator.addRule(ocoord);
 		aggregator.addRule(coord);
 		
-		List<NLGElement> aggregated;
+		List<NLGElement> aggregated = planned;
 		
-		if (planned.size() > 1) {
-			aggregated = aggregator.realise(planned);
-		} else {
-			aggregated = planned;
+		boolean skip = false;
+		if (!skip) {
+			if (planned.size() > 1) {
+				aggregated = aggregator.realise(planned);
+			}
 		}
 		
 		return aggregated;

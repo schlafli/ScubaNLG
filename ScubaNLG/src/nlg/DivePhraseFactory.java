@@ -46,7 +46,8 @@ public class DivePhraseFactory {
 			
 			SPhraseSpec sequenceDivelets = NLGUtils.getFactory().createClause();
 			
-			sequenceDivelets.setSubject(getDiverEntity());
+			sequenceDivelets.setSubject(NLGUtils.getFactory().createNounPhrase(
+					"you"));
 			
 			sequenceDivelets.setVerb("perform");
 			sequenceDivelets.addModifier("effectively");
@@ -206,7 +207,7 @@ public class DivePhraseFactory {
 		if ((eval = getTypedMessage(evaluation, DiveEvaluation.class)) != null) {
 			
 			NPPhraseSpec theDive = NLGUtils.getFactory().createNounPhrase(
-					getDiveEntity());
+					NLGUtils.getFactory().createNounPhrase("dive"));
 			theDive.setDeterminer("the");
 			
 			SPhraseSpec sps = NLGUtils.getFactory().createClause();
@@ -293,47 +294,47 @@ public class DivePhraseFactory {
 	private static NPPhraseSpec	entityDive3;
 	
 	// public static String getRandomDeterminer
-	
-	public static NPPhraseSpec getDiveEntity() {
-		
-		if (entityDive == null) {
-			entityDive = NLGUtils.getFactory().createNounPhrase("dive");
-		}
-		
-		return entityDive;
-	}
-	
-	public static NPPhraseSpec getDiverEntity() {
-		
-		if (entityDiver == null) {
-			entityDiver = NLGUtils.getFactory().createNounPhrase("you");
-		}
-		
-		return entityDiver;
-	}
-	
-	public static NPPhraseSpec getDiveletNumberEntity(int diveletNumber) {
-		
-		if (entityDive1 == null) {
-			entityDive1 = NLGUtils.getFactory().createNounPhrase("first",
-					"dive");
-			entityDive2 = NLGUtils.getFactory().createNounPhrase("second",
-					"dive");
-			entityDive3 = NLGUtils.getFactory().createNounPhrase("third",
-					"dive");
-		}
-		switch (diveletNumber) {
-			case 1:
-				return entityDive1;
-			case 2:
-				return entityDive2;
-			case 3:
-				return entityDive3;
-				
-			default:
-				break;
-		}
-		return entityDive;
-	}
+	//
+	// public static NPPhraseSpec getDiveEntity() {
+	//
+	// if (entityDive == null) {
+	// entityDive = NLGUtils.getFactory().createNounPhrase("dive");
+	// }
+	//
+	// return entityDive;
+	// }
+	//
+	// public static NPPhraseSpec getDiverEntity() {
+	//
+	// if (entityDiver == null) {
+	// entityDiver = NLGUtils.getFactory().createNounPhrase("you");
+	// }
+	//
+	// return entityDiver;
+	// }
+	//
+	// public static NPPhraseSpec getDiveletNumberEntity(int diveletNumber) {
+	//
+	// if (entityDive1 == null) {
+	// entityDive1 = NLGUtils.getFactory().createNounPhrase("first",
+	// "dive");
+	// entityDive2 = NLGUtils.getFactory().createNounPhrase("second",
+	// "dive");
+	// entityDive3 = NLGUtils.getFactory().createNounPhrase("third",
+	// "dive");
+	// }
+	// switch (diveletNumber) {
+	// case 1:
+	// return entityDive1;
+	// case 2:
+	// return entityDive2;
+	// case 3:
+	// return entityDive3;
+	//
+	// default:
+	// break;
+	// }
+	// return entityDive;
+	// }
 	
 }

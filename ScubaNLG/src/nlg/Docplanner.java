@@ -18,12 +18,15 @@ public class Docplanner {
 			docplan.add(mStore.query(DiveEvaluation.class, eval -> true, true));
 		}
 		
+		docplan.newSection();
 		docplan.addAll(mStore.queryAll(DiveletMessage.class,
 				divelet -> divelet.getDiveletNumber() == 1));
 		
+		docplan.newSection();
 		docplan.addAll(mStore.queryAll(DiveletMessage.class,
 				divelet -> divelet.getDiveletNumber() == 2));
 		
+		docplan.newSection();
 		// return mStore.stream().collect(Collectors.toList());
 		return docplan;
 	}
