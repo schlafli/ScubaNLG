@@ -20,11 +20,17 @@ public class Microplanner {
 		lexRules = new ArrayList<>();
 		lexRules.add(DivePhraseFactory::getDiveDescription);
 		lexRules.add(DivePhraseFactory::getDiveletDepthWarning);
+		
 		lexRules.add(DivePhraseFactory::getExcessSecondDiveDepth);
 		lexRules.add(DivePhraseFactory::getExcessDepthTimeWarning);
+		
 		lexRules.add(DivePhraseFactory::getSafeDepthElement);
 		lexRules.add(DivePhraseFactory::getSafeBottomTimeElement);
+		lexRules.add(DivePhraseFactory::getSafeAscentRateElement);
+		
 		lexRules.add(DivePhraseFactory::generateMultiplDiveletWarning);
+		lexRules.add(DivePhraseFactory::getAscentRateDescription);
+		
 	}
 	
 	public List<List<NLGElement>> run(DocPlan docplan) {
@@ -60,7 +66,7 @@ public class Microplanner {
 		// aggregator.addRule(fcr);
 		// aggregator.addRule(bcr);
 		
-		// aggregator.addRule(ocoord);
+		aggregator.addRule(ocoord);
 		aggregator.addRule(coord);
 		
 		List<NLGElement> aggregated = planned;

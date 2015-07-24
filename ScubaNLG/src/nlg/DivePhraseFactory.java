@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import messages.DiveEvaluation;
+import messages.DiveletAscentRateEvaluationMessage;
 import messages.DiveletDepthWarningMessage;
 import messages.DiveletExcessDepthTimeMessage;
 import messages.DiveletMessage;
 import messages.Message;
 import messages.MultipleDiveWarningMessage;
+import messages.SafeAscentRateMessage;
 import messages.SafeBottomTimeMessage;
 import messages.SafeDiveDepthMessage;
 import messages.SecondDiveletDeeperMessage;
@@ -24,6 +26,84 @@ import simplenlg.phrasespec.SPhraseSpec;
 import simplenlg.phrasespec.VPPhraseSpec;
 
 public class DivePhraseFactory {
+	
+	public static NLGElement getAscentRateDescription(Message evaluation) {
+		DiveletAscentRateEvaluationMessage eval;
+		if ((eval = getTypedMessage(evaluation,
+				DiveletAscentRateEvaluationMessage.class)) != null) {
+			
+			NPPhraseSpec ascentRate = NLGUtils.getFactory().createNounPhrase(
+					"ascent rate");
+			ascentRate.setDeterminer("your");
+			
+			SPhraseSpec sps = NLGUtils.getFactory().createClause();
+			
+			sps.setVerb("be");
+			
+			String description = "";
+			
+			String ascentRateString = "" + (int) (eval.getAscentRate() + 0.5);
+			
+			switch (eval.getEvaluation()) {
+				case SLOW: // < 1.4 m/min
+					// add ascentRate precise value to the subject:
+					// "Your slow ascent rate of around 1m/min"
+					ascentRate.addModifier("slow");
+					ascentRate.addComplement("of around " + ascentRateString/*
+																			 * rounded
+																			 * !
+																			 */
+							+ "m/min");
+					// IDEALLY:
+					// Change verb and object
+					sps.setVerb("help");
+					sps.setObject("you");
+					// Change description (complement)
+					description = "to degas before you ascended to the surface";
+					
+					// IF the anterior is not possible, then :
+					// String description =
+					// "good, as it should have helped you to "
+					// + "degas before you ascended to the surface";
+					break;
+				case FINE: // < 4 m/min
+					description = "fine";
+					break;
+				case CLOSE: // < 6 m/min
+					description = "close to the PADI safe ascent rate limit of 6m/min";
+					break;
+				case A_BIT_FASTER: // < 7 m/min
+					description = "a little faster than the PADI recommended safe speed of 6m/min";
+					break;
+				case ACCEPTABLE: // < 10 m/min
+					description = "acceptable";
+					// add ascentRate precise value to the subject:
+					// "Your ascent rate of around 9m/min"
+					ascentRate.addComplement("of around " + ascentRateString /*
+																			 * rounded
+																			 * !
+																			 */
+							+ "m/min");
+					// we should also add this complete sentence after the
+					// clause :
+					String addWarning = "But you could have entirely avoided the "
+							+ "risk of micro-bubbles by ascending slower than PADI "
+							+ "recommended safe ascent rate of 6m/min.";
+					break;
+				default:
+					break;
+			}
+			
+			AdjPhraseSpec adjSpec = NLGUtils.getFactory()
+					.createAdjectivePhrase(description);
+			
+			sps.setSubject(ascentRate);
+			sps.setComplement(adjSpec);
+			
+			return sps;
+		}
+		return null;
+	}
 	
 	public static NLGElement generateMultiplDiveletWarning(Message message) {
 		
@@ -110,6 +190,22 @@ public class DivePhraseFactory {
 		return null;
 	}
 	
+	public static NLGElement getSafeAscentRateElement(Message message) {
+		
+		SafeAscentRateMessage msg;
+		if ((msg = getTypedMessage(message, SafeAscentRateMessage.class)) != null) {
+			
+			NPPhraseSpec depth = NLGUtils.getFactory().createNounPhrase(
+					"ascent rate");
+			
+			depth.setDeterminer("your");
+			
+			return getDiveletWithinLimitPhrase(depth, msg);
+		}
+		
+		return null;
+	}
+	
 	public static NLGElement getSafeBottomTimeElement(Message message) {
 		
 		SafeBottomTimeMessage msg;
@@ -131,18 +227,21 @@ public class DivePhraseFactory {
 		DiveletExcessDepthTimeMessage msg;
 		if ((msg = getTypedMessage(message, DiveletExcessDepthTimeMessage.class)) != null) {
 			
-			SPhraseSpec spec = NLGUtils.getFactory()
-					.createClause("you", "stay");
+			VPPhraseSpec verb = NLGUtils.getFactory().createVerbPhrase("stay");
+			
+			PPPhraseSpec prepp = NLGUtils.getFactory()
+					.createPrepositionPhrase("longer",
+							"than the NDL by " + msg.getExcessTime() + "mins");
+			verb.setObject(prepp);
+			
+			NPPhraseSpec you = NLGUtils.getFactory().createNounPhrase("you");
+			SPhraseSpec spec = NLGUtils.getFactory().createClause(you, verb);
 			
 			PPPhraseSpec diveletNP = getDiveletNP(msg);
 			if (diveletNP != null) {
 				spec.addFrontModifier(diveletNP);
 			}
 			
-			NPPhraseSpec noun = NLGUtils
-					.getNounPhrase("longer than the NDL by "
-							+ msg.getExcessTime() + "mins");
-			spec.addComplement(noun);
 			return spec;
 		}
 		
@@ -180,23 +279,34 @@ public class DivePhraseFactory {
 		if ((warning = getTypedMessage(message,
 				DiveletDepthWarningMessage.class)) != null) {
 			
-			SPhraseSpec spec = NLGUtils.getFactory().createClause("you", "go");
+			PPPhraseSpec prepp;
+			
+			if (warning.isCloseToLimit()) {
+				prepp = NLGUtils.getFactory().createPrepositionPhrase(
+						"very close to", "the PADI depth limit of 42m");
+			} else {
+				String depth = ""
+						+ ((int) (warning.getExcessDiveDepth() + 0.5)) + "m";
+				prepp = NLGUtils.getFactory().createPrepositionPhrase(
+						depth + " deeper than",
+						" the PADI recommended depth limit of 42m");
+			}
+			
+			VPPhraseSpec verb = NLGUtils.getFactory().createVerbPhrase("go");
+			
+			verb.setObject(prepp);
+			
+			NPPhraseSpec you = NLGUtils.getFactory().createNounPhrase("you");
+			
+			SPhraseSpec spec = NLGUtils.getFactory().createClause(you, verb);
 			
 			PPPhraseSpec diveletNP = getDiveletNP(warning);
 			if (diveletNP != null) {
 				spec.addFrontModifier(diveletNP);
 			}
 			
-			if (warning.isCloseToLimit()) {
-				spec.addComplement("very close to the PADI depth limit of 42m");
-			} else {
-				String depth = ""
-						+ ((int) (warning.getExcessDiveDepth() + 0.5)) + "m";
-				spec.addComplement(depth
-						+ " deeper than the PADI recommended depth limit of 42m");
-			}
-			
 			return spec;
+			
 		}
 		return null;
 	}
@@ -287,12 +397,12 @@ public class DivePhraseFactory {
 		}
 	}
 	
-	private static NPPhraseSpec	entityDiver;
-	private static NPPhraseSpec	entityDive;
-	private static NPPhraseSpec	entityDive1;
-	private static NPPhraseSpec	entityDive2;
-	private static NPPhraseSpec	entityDive3;
-	
+	// private static NPPhraseSpec entityDiver;
+	// private static NPPhraseSpec entityDive;
+	// private static NPPhraseSpec entityDive1;
+	// private static NPPhraseSpec entityDive2;
+	// private static NPPhraseSpec entityDive3;
+	//
 	// public static String getRandomDeterminer
 	//
 	// public static NPPhraseSpec getDiveEntity() {

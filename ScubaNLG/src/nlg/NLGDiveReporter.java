@@ -3,11 +3,14 @@ package nlg;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import messages.AscentRateEvaluationValue;
 import messages.DiveEvaluation;
 import messages.DiveEvaluationValue;
+import messages.DiveletAscentRateEvaluationMessage;
 import messages.DiveletDepthWarningMessage;
 import messages.DiveletExcessDepthTimeMessage;
 import messages.MultipleDiveWarningMessage;
+import messages.SafeAscentRateMessage;
 import messages.SafeBottomTimeMessage;
 import messages.SafeDiveDepthMessage;
 import messages.SecondDiveletDeeperMessage;
@@ -43,11 +46,11 @@ public class NLGDiveReporter extends DiveReporter {
 		
 		// add additional text
 		String initial = super.generateText();
-		String generated = "<br><h4>Generated Text:</h4>";
+		String generated = "<h1>Generated Text:</h1>";
 		
 		generated += generatedText;
 		
-		generated += new SergeNLG(diveFeatures).generateText();
+		// generated += new SergeNLG(diveFeatures).generateText();
 		
 		return initial + generated;
 		
@@ -58,10 +61,24 @@ public class NLGDiveReporter extends DiveReporter {
 		Microplanner microplanner = new Microplanner();
 		List<List<NLGElement>> res = microplanner.run(docplan);
 		String output = "";
+		
+		int sectionIndex = 0;
+		
 		for (List<NLGElement> list : res) {
+			
+			if (sectionIndex >= 0
+					&& sectionIndex < docplan.getSectionNames().size()) {
+				String section = docplan.getSectionNames().get(sectionIndex);
+				if (section.trim().length() > 0) {
+					output += "<h2><u>" + section + "</u></h2>";
+				}
+			}
+			
 			output += list.stream().map(realiser::realiseSentence)
 					.collect(Collectors.joining())
-					+ "\n";
+					+ "<br>";
+			
+			sectionIndex++;
 		}
 		
 		return output;
@@ -100,6 +117,41 @@ public class NLGDiveReporter extends DiveReporter {
 		evaluateDiveletDepth(divelet, diveletNumber, totalDivelets);
 		evaluateDiveletDuration(divelet, diveletNumber, totalDivelets);
 		evaluateDiveletBottomTime(divelet, diveletNumber, totalDivelets);
+		evaluateDiveletAscentRate(divelet, diveletNumber, totalDivelets);
+		
+	}
+	
+	private void evaluateDiveletAscentRate(DiveletFeatures divelet,
+			int diveletNumber, int totalDivelets) {
+		
+		DiveletAscentRateEvaluationMessage msg = new DiveletAscentRateEvaluationMessage();
+		msg.setDiveletNumber(diveletNumber);
+		msg.setTotalDivelets(totalDivelets);
+		msg.setAscentRate(divelet.getAscentSpeed());
+		
+		if (divelet.getAscentSpeed() < 5) {
+			SafeAscentRateMessage msg2 = new SafeAscentRateMessage();
+			msg2.setDiveletNumber(diveletNumber);
+			msg2.setTotalDivelets(totalDivelets);
+			mStore.add(msg2);
+		}
+		
+		if (divelet.getAscentSpeed() < 1.4) {
+			msg.setEvaluation(AscentRateEvaluationValue.SLOW);
+		} else if (divelet.getAscentSpeed() < 4) {
+			msg.setEvaluation(AscentRateEvaluationValue.FINE);
+		} else if (divelet.getAscentSpeed() < 6) {
+			msg.setEvaluation(AscentRateEvaluationValue.CLOSE);
+		} else if (divelet.getAscentSpeed() < 7) {
+			msg.setEvaluation(AscentRateEvaluationValue.A_BIT_FASTER);
+		} else if (divelet.getAscentSpeed() < 10) {
+			msg.setEvaluation(AscentRateEvaluationValue.ACCEPTABLE);
+		} else {
+			msg.setEvaluation(AscentRateEvaluationValue.FINE);
+		}
+		
+		mStore.add(msg);
+		
 	}
 	
 	private void evaluateDiveletDuration(DiveletFeatures divelet,

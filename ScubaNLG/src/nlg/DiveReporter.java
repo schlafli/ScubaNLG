@@ -31,8 +31,6 @@ public class DiveReporter implements Reporter {
 		String corpusText = CorpusText.getText(diveFeatures.getDiveNo()
 				.intValue());
 		
-		return corpusText + "<br><b>Computer Text:</b><br>" +
-		// "<em> MR derp!</em><br><br>" +
-				diveFeatures.toString();
+		return corpusText; //
 	}
 }
