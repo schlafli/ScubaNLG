@@ -42,13 +42,19 @@ public class NLGDiveReporter extends DiveReporter {
 		DocPlan docplan = docplanner.run(mStore);
 		
 		// run the microplanner to generate text
-		String generatedText = runMicroplanner(docplan);
+		String generatedText = runMicroplanner(docplan, true);
+		// run the microplanner to generate text
+		String generatedTextWithoutAggregation = runMicroplanner(docplan, false);
 		
 		// add additional text
 		String initial = super.generateText();
-		String generated = "<h1>Generated Text:</h1>";
+		String generated = "<h1>Generated Text (with Aggregation):</h1>";
 		
 		generated += generatedText;
+		
+		generated += "<h1>Generated Text (without Aggregation):</h1>";
+		
+		generated += generatedTextWithoutAggregation;
 		
 		// generated += new SergeNLG(diveFeatures).generateText();
 		
@@ -56,9 +62,9 @@ public class NLGDiveReporter extends DiveReporter {
 		
 	}
 	
-	public String runMicroplanner(DocPlan docplan) {
+	public String runMicroplanner(DocPlan docplan, boolean withAggregation) {
 		Realiser realiser = NLGUtils.getRealiser();
-		Microplanner microplanner = new Microplanner();
+		Microplanner microplanner = new Microplanner(withAggregation);
 		List<List<NLGElement>> res = microplanner.run(docplan);
 		String output = "";
 		

@@ -15,8 +15,10 @@ import simplenlg.framework.NLGElement;
 public class Microplanner {
 	
 	public List<Function<Message, NLGElement>>	lexRules;
+	boolean										withAggregation;
 	
-	public Microplanner() {
+	public Microplanner(boolean withAggregation) {
+		this.withAggregation = withAggregation;
 		lexRules = new ArrayList<>();
 		lexRules.add(DivePhraseFactory::getDiveDescription);
 		lexRules.add(DivePhraseFactory::getDiveletDepthWarning);
@@ -71,7 +73,7 @@ public class Microplanner {
 		
 		List<NLGElement> aggregated = planned;
 		
-		boolean skip = false;
+		boolean skip = !this.withAggregation;
 		if (!skip) {
 			if (planned.size() > 1) {
 				aggregated = aggregator.realise(planned);
