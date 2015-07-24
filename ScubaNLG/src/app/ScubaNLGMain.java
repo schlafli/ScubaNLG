@@ -65,8 +65,8 @@ public class ScubaNLGMain extends javax.swing.JFrame {
 		this.add(gPanel, java.awt.BorderLayout.CENTER);
 		// set the preferred size of the scatterplot window
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		PREFERRED_WIDTH = (new Double(0.75 * screenSize.width)).intValue();
-		PREFERRED_HEIGHT = (new Double(0.75 * screenSize.height)).intValue();
+		PREFERRED_WIDTH = (new Double(1.0 * screenSize.width)).intValue();
+		PREFERRED_HEIGHT = (new Double(0.9 * screenSize.height)).intValue();
 		this.setPreferredSize(new Dimension(PREFERRED_WIDTH, PREFERRED_HEIGHT));
 		this.pack();
 		this.setVisible(true);
@@ -119,8 +119,8 @@ public class ScubaNLGMain extends javax.swing.JFrame {
 		
 		// set the preferred size of the scatterplot window
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		PREFERRED_WIDTH = (new Double(0.75 * screenSize.width)).intValue();
-		PREFERRED_HEIGHT = (new Double(0.85 * screenSize.height)).intValue();
+		PREFERRED_WIDTH = (new Double(1.0 * screenSize.width)).intValue();
+		PREFERRED_HEIGHT = (new Double(0.9 * screenSize.height)).intValue();
 		/*
 		 * dialog.addKeyListener(new KeyListener() {
 		 * 

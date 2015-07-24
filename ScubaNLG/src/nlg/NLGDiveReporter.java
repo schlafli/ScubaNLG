@@ -52,7 +52,7 @@ public class NLGDiveReporter extends DiveReporter {
 		
 		// generated += new SergeNLG(diveFeatures).generateText();
 		
-		return initial + generated;
+		return "<br>" + initial + generated + "<br><br>";
 		
 	}
 	
